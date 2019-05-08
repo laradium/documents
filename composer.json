@@ -1,0 +1,24 @@
+{
+  "name": "laradium/laradium-documents",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Artūrs Lukjaņenoks",
+      "email": "arturs.lukjanenoks@netcore.lv"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {},
+  "autoload": {
+    "psr-4": {
+      "Laradium\\Laradium\\Documents\\": "src"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Laradium\\Laradium\\Documents\\Providers\\LaradiumDocumentServiceProvider"
+      ]
+    }
+  }
+}
