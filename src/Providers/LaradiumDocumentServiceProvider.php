@@ -2,34 +2,21 @@
 
 namespace Laradium\Laradium\Documents\Providers;
 
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
+use Laradium\Laradium\Registries\FieldRegistry;
 
 class LaradiumDocumentServiceProvider extends ServiceProvider
 {
     /**
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
-        $configPath = __DIR__ . '/../../config/laradium-documents.php';
-        $assetPath = __DIR__ . '/../../public/laradium';
-        $this->mergeConfigFrom($configPath, 'laradium-documents');
-
-        $this->publishes([
-            $configPath => config_path('laradium-documents.php'),
-            $assetPath  => public_path('laradium')
-        ], 'laradium-documents');
-
-        $this->publishes([
-            $assetPath  => public_path('laradium')
-        ], 'laradium');
-
-        $this->publishes([
-            $assetPath  => public_path('laradium')
-        ], 'laradium-assets');
-
-        $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'laradium-documents');
-        $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
+        $this->publishConfig();
+        $this->publishAssets();
+        $this->loadViews();
+        $this->loadMigrations();
 
         // Global helpers
         require_once __DIR__ . '/../Helpers/Global.php';
@@ -40,8 +27,57 @@ class LaradiumDocumentServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function register()
+    public function register(): void
     {
+        $this->registerFields();
+    }
 
+    private function publishConfig(): void
+    {
+        $configPath = __DIR__ . '/../../config/laradium-documents.php';
+        $this->mergeConfigFrom($configPath, 'laradium-documents');
+
+        $this->publishes([
+            $configPath => config_path('laradium-documents.php'),
+        ], 'laradium-documents');
+    }
+
+    private function publishAssets(): void
+    {
+        $assetPath = __DIR__ . '/../../public/laradium/assets/js/documents.js';
+
+        $tags = [
+            'laradium', 'laradium-assets', 'laradium-documents'
+        ];
+
+        foreach ($tags as $tag) {
+            $this->publishes([
+                $assetPath => public_path('laradium/assets/js/documents.js')
+            ], $tag);
+        }
+    }
+
+    private function loadViews(): void
+    {
+        $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'laradium-documents');
+    }
+
+    private function loadMigrations(): void
+    {
+        $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
+    }
+
+    private function registerFields(): void
+    {
+        $fieldRegistry = app(FieldRegistry::class);
+
+        foreach (File::allFiles(__DIR__ . '/../Base/Fields') as $path) {
+            $field = $path->getPathname();
+            $baseName = basename($field, '.php');
+            $field = 'Laradium\\Laradium\\Documents\\Base\\Fields\\' . $baseName;
+            $fieldList[lcfirst($baseName)] = $field;
+
+            $fieldRegistry->register(lcfirst($baseName), $field);
+        }
     }
 }
