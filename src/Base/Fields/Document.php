@@ -19,6 +19,8 @@ class Document extends Select
 
         $this->label('Document');
         $this->options(DocumentModel::current()->pluck('title', 'id')->toArray());
+
+        $this->rules('required|exists:documents,id');
     }
 
     /**
