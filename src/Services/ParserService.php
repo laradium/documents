@@ -114,9 +114,15 @@ class ParserService
 
                 $values['values'][$index] = is_callable($customPlaceholder) ? $customPlaceholder() : $customPlaceholder;
             } elseif ($nameSpace === strtolower(class_basename($documentable))) {
-                $values['values'][$index] = $documentable->$property ?? '';
+                if (str_contains($property, '.')) {
+                    [$relation, $subProperty] = explode('.', $property);
+
+                    $values['values'][$index] = $documentable->$relation->$subProperty ?? '';
+                } else {
+                    $values['values'][$index] = $documentable->$property ?? '';
+                }
             } else {
-                $values['values'][$index] = $documentable->$nameSpace->$property ?? '';
+                $values['values'][$index] = '';
             }
         }
 
@@ -146,7 +152,7 @@ class ParserService
         }
 
         if (str_contains($name, 'date_format')) {
-            [$property, $format] = explode('=', $name);
+            [, $format] = explode('=', $name);
 
             return now()->format($format);
         }
