@@ -142,3 +142,10 @@ You can also add custom models, which are in different directory and uses differ
 To add custom placeholders, simply add them to the `custom_placeholders` array.
 You can add simple values, or functions which returns the necessary value. This way you can create reusable snippets
 
+## Events
+
+This module uses the default Laravel event system, so you can easily attach listeners to events.
+
+- `Laradium\Laradium\Documents\Events\DocumentCreated` - Triggered when a new document template is created
+- `Laradium\Laradium\Documents\Events\DocumentUpdated` - Triggered when a document template is updated
+- `Laradium\Laradium\Documents\Events\DocumentGenerated` - Triggered when a document is generated (downloaded for the first time)

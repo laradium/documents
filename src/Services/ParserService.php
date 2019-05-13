@@ -3,6 +3,7 @@
 namespace Laradium\Laradium\Documents\Services;
 
 use Illuminate\Support\Facades\File;
+use Laradium\Laradium\Documents\Events\DocumentGenerated;
 use Laradium\Laradium\Documents\Interfaces\DocumentableInterface;
 
 class ParserService
@@ -84,6 +85,8 @@ class ParserService
         $documentable->update([
             'content' => $content
         ]);
+
+        event(new DocumentGenerated($documentable));
 
         return $content;
     }

@@ -9,6 +9,8 @@ use Laradium\Laradium\Base\ColumnSet;
 use Laradium\Laradium\Base\FieldSet;
 use Laradium\Laradium\Base\Resource;
 use Laradium\Laradium\Base\Table;
+use Laradium\Laradium\Documents\Events\DocumentCreated;
+use Laradium\Laradium\Documents\Events\DocumentUpdated;
 use Laradium\Laradium\Documents\Interfaces\DocumentableInterface;
 use Laradium\Laradium\Documents\Models\Document;
 use Laradium\Laradium\Documents\Services\DocumentService;
@@ -59,6 +61,10 @@ class DocumentResource extends AbstractResource
                 $document->update([
                     'type' => $this->getModel()::TYPE_REVISION
                 ]);
+
+                event(new DocumentUpdated($model));
+            } else {
+                event(new DocumentCreated($model));
             }
         });
 
