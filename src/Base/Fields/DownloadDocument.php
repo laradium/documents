@@ -14,24 +14,31 @@ class DownloadDocument extends Link
      */
     public function __construct($parameters, Model $model)
     {
+        parent::__construct([
+            array_get($parameters, 0, 'Download'),
+            '#',
+        ], $model);
+
+        $this->attr([
+            'target' => '_blank',
+            'class'  => 'btn btn-primary mb-2',
+        ]);
+    }
+
+    public function build($attributes = [])
+    {
         $url = '#';
 
-        if ($model->exists) {
+        if ($this->getModel()->exists) {
             $url = route('admin.documents.download', [
-                'id'   => $model->id,
-                'type' => strtolower(class_basename($model))
+                'id'   => $this->getModel()->id,
+                'type' => strtolower(class_basename($this->getModel()))
             ]);
         }
 
-        parent::__construct([
-            'Download',
-            $url,
-        ], $model);
+        $this->value($url);
 
-        $this->attributes([
-            'target' => '_blank',
-            'class'  => 'btn btn-primary ' . (!$model->exists ? 'hidden' : ''),
-        ]);
+        return parent::build($attributes);
     }
 
     /**
@@ -42,6 +49,11 @@ class DownloadDocument extends Link
         $response = parent::formattedResponse();
 
         $response['type'] = 'link';
+        $response['attr'] = $this->getAttr();
+
+        if ($response['value'] === '#') {
+            $response['attr']['class'] .= ' hidden';
+        }
 
         return $response;
     }
