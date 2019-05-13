@@ -1,7 +1,7 @@
 $(document).ready(() => {
     console.log('swagging');
 
-    $('.trumbowyg-editor').css('height', 600);
+    $('.tox-tinymce').css('height', 600);
 
     $(document).on('change', '#revert-to', async (e) => {
         let revisionId = parseInt(e.target.value);
@@ -30,7 +30,11 @@ $(document).ready(() => {
 
         if (revision) {
             $('#title').val(revision.title);
-            $('.trumbowyg-textarea').trumbowyg('html', revision.content);
+
+            let editor = tinyMCE.get($('.tox-tinymce').parent().find('textarea').attr('id'));
+            editor.setContent(revision.content);
+
+            $('input[name=content]').val(revision.content);
 
             //Reset the select
             $(e.target).val('0');

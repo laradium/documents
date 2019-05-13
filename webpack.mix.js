@@ -11,6 +11,4 @@ mix.setPublicPath('public');
  |
  */
 
-mix.babel([
-    'resources/assets/js/documents.js'
-], 'public/laradium/assets/js/documents.js');
+mix.js('resources/assets/js/documents.js', 'public/laradium/assets/js');
