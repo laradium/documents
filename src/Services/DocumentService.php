@@ -56,10 +56,16 @@ class DocumentService
 
     /**
      * @param Blueprint $blueprint
+     * @param bool $withForeign
      */
-    public static function columns(Blueprint $blueprint): void
+    public static function columns(Blueprint $blueprint, $withForeign = false): void
     {
         $blueprint->integer('document_id')->unsigned();
+
+        if ($withForeign) {
+            $blueprint->foreign('document_id')->references('id')->on('document')->onDelete('cascade');
+        }
+
         $blueprint->longText('content')->nullable();
     }
 }

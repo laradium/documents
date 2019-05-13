@@ -195,5 +195,7 @@ class DocumentResource extends AbstractResource
                 return app($model)->find($id);
             }
         }
+
+        return null;
     }
 }
