@@ -71,7 +71,7 @@ class DocumentService
         $blueprint->integer('document_id')->unsigned();
 
         if ($withForeign) {
-            $blueprint->foreign('document_id')->references('id')->on('document')->onDelete('cascade');
+            $blueprint->foreign('document_id')->references('id')->on('documents')->onDelete('cascade');
         }
 
         $blueprint->longText('content')->nullable();
