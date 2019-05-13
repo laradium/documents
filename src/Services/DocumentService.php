@@ -39,6 +39,14 @@ class DocumentService
     }
 
     /**
+     * @return array
+     */
+    public function getPlaceholders(): array
+    {
+        return $this->getParser()->getPlaceholders();
+    }
+
+    /**
      * @param DocumentableInterface $documentable
      * @return mixed
      * @throws Throwable

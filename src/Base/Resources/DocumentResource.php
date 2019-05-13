@@ -104,7 +104,7 @@ class DocumentResource extends AbstractResource
 
                 $set->customContent(function () {
                     return view('laradium-documents::_partials.placeholders', [
-                        'placeHolders' => (new DocumentService())->getParser()->getPlaceholders()
+                        'placeHolders' => $this->service->getPlaceholders()
                     ])->render();
                 });
 
