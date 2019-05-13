@@ -12,7 +12,7 @@ trait Documentable
      */
     public function getPlaceholders(): array
     {
-        return $this->placeholders ?? $this->getFillable();
+        return $this->placeholders ?? array_merge($this->getFillable(), $this->getArrayableAppends());
     }
 
     /** Relationships */
