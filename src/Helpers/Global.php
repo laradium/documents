@@ -6,9 +6,10 @@ if (!function_exists('documentColumns')) {
 
     /**
      * @param $blueprint
+     * @param bool $withForeign
      */
-    function documentColumns($blueprint)
+    function documentColumns($blueprint, $withForeign = false)
     {
-        DocumentService::columns($blueprint);
+        DocumentService::columns($blueprint, $withForeign);
     }
 }
