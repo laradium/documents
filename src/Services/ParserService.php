@@ -94,6 +94,8 @@ class ParserService
     /**
      * @param DocumentableInterface $documentable
      * @return array
+     *
+     * @TODO Refactoring this, in something more readable
      */
     private function buildPlaceholderValues(DocumentableInterface $documentable): array
     {
@@ -112,12 +114,18 @@ class ParserService
             } elseif (isset(config('laradium-documents.custom_placeholders')[$placeHolder])) {
                 $customPlaceholder = config('laradium-documents.custom_placeholders')[$placeHolder];
 
-                $values['values'][$index] = is_callable($customPlaceholder) ? $customPlaceholder() : $customPlaceholder;
+                $values['values'][$index] = is_callable($customPlaceholder) ? $customPlaceholder($documentable) : $customPlaceholder;
             } elseif ($nameSpace === strtolower(class_basename($documentable))) {
                 if (str_contains($property, '.')) {
                     [$relation, $subProperty] = explode('.', $property);
 
-                    $values['values'][$index] = $documentable->$relation->$subProperty ?? '';
+                    if (method_exists($documentable->$relation, $subProperty)) {
+                        $values['values'][$index] = $documentable->$relation->$subProperty($documentable);
+                    } else {
+                        $values['values'][$index] = $documentable->$relation->$subProperty ?? '';
+                    }
+                } else if (method_exists($documentable, $property)) {
+                    $values['values'][$index] = $documentable->$property($documentable);
                 } else {
                     $values['values'][$index] = $documentable->$property ?? '';
                 }
