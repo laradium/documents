@@ -1,6 +1,4 @@
 $(document).ready(() => {
-    console.log('swagging');
-
     $('.tox-tinymce').css('height', 600);
 
     $(document).on('change', '#revert-to', async (e) => {
