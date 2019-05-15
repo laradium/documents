@@ -3,9 +3,15 @@
         <strong>Available placeholders</strong>
     </p>
 
-    @foreach($placeHolders as $index => $placeholder)
-        <label class="badge badge-inverse">
-            {{ '{'.$placeholder.'}' }}
-        </label>
+    @foreach($placeHolders as $nameSpace => $values)
+        <p>
+            <strong>{{ title_case(str_replace('_', '', $nameSpace)) }}</strong>
+        </p>
+
+        @foreach($values as $placeHolder)
+            <label class="badge badge-inverse">
+                {{ '{'.$placeHolder.'}' }}
+            </label>
+        @endforeach
     @endforeach
 </div>

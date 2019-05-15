@@ -4,6 +4,7 @@ namespace Laradium\Laradium\Documents\Services;
 
 use Illuminate\Support\Facades\File;
 use Laradium\Laradium\Documents\Events\DocumentGenerated;
+use Laradium\Laradium\Documents\Exceptions\MissingRelationException;
 use Laradium\Laradium\Documents\Interfaces\DocumentableInterface;
 
 class ParserService
@@ -47,7 +48,9 @@ class ParserService
      */
     public function getPlaceholders(): array
     {
-        $placeholders = $this->basePlaceholders;
+        $placeholders = [
+            'global' => $this->basePlaceholders
+        ];
 
         $models = $this->getDocumentableModels();
 
@@ -59,12 +62,14 @@ class ParserService
             }
 
             foreach ($model->getPlaceholders() as $placeholder) {
-                $placeholders[] = snake_case(class_basename($model)) . '.' . $placeholder;
+                $nameSpace = snake_case(class_basename($model));
+
+                $placeholders[$nameSpace][] = $nameSpace . '.' . $placeholder;
             }
         }
 
         foreach (config('laradium-documents.custom_placeholders') as $placeholder => $value) {
-            $placeholders[] = $placeholder;
+            $placeholders['custom'][] = $placeholder;
         }
 
         return $placeholders;
@@ -73,9 +78,14 @@ class ParserService
     /**
      * @param DocumentableInterface $documentable
      * @return string
+     * @throws MissingRelationException
      */
     public function render(DocumentableInterface $documentable): string
     {
+        if (!isset($documentable->document)) {
+            throw new MissingRelationException('Missing document relationship');
+        }
+
         $template = $documentable->document->content;
 
         $replace = $this->buildPlaceholderValues($documentable);
@@ -95,7 +105,7 @@ class ParserService
      * @param DocumentableInterface $documentable
      * @return array
      *
-     * @TODO Refactoring this, in something more readable
+     * @TODO Refactor this, in something more readable
      */
     private function buildPlaceholderValues(DocumentableInterface $documentable): array
     {
@@ -104,33 +114,35 @@ class ParserService
             'values'       => []
         ];
 
-        foreach ($this->getPlaceholders() as $index => $placeHolder) {
-            $values['placeholders'][$index] = '{' . $placeHolder . '}';
+        foreach ($this->getPlaceholders() as $nameSpace => $placeHolders) {
+            foreach ($placeHolders as $placeHolder) {
+                $values['placeholders'][] = '{' . $placeHolder . '}';
 
-            [$nameSpace, $property] = explode('.', $placeHolder, 2);
+                [$nameSpace, $property] = explode('.', $placeHolder, 2);
 
-            if ($nameSpace === 'function') {
-                $values['values'][$index] = $this->runFunction($property);
-            } elseif (isset(config('laradium-documents.custom_placeholders')[$placeHolder])) {
-                $customPlaceholder = config('laradium-documents.custom_placeholders')[$placeHolder];
+                if ($nameSpace === 'function') {
+                    $values['values'][] = $this->runFunction($property);
+                } elseif (isset(config('laradium-documents.custom_placeholders')[$placeHolder])) {
+                    $customPlaceholder = config('laradium-documents.custom_placeholders')[$placeHolder];
 
-                $values['values'][$index] = is_callable($customPlaceholder) ? $customPlaceholder($documentable) : $customPlaceholder;
-            } elseif ($nameSpace === strtolower(class_basename($documentable))) {
-                if (str_contains($property, '.')) {
-                    [$relation, $subProperty] = explode('.', $property);
+                    $values['values'][] = is_callable($customPlaceholder) ? $customPlaceholder($documentable) : $customPlaceholder;
+                } elseif ($nameSpace === strtolower(class_basename($documentable))) {
+                    if (str_contains($property, '.')) {
+                        [$relation, $subProperty] = explode('.', $property);
 
-                    if (method_exists($documentable->$relation, $subProperty)) {
-                        $values['values'][$index] = $documentable->$relation->$subProperty($documentable);
+                        if (method_exists($documentable->$relation, $subProperty)) {
+                            $values['values'][] = $documentable->$relation->$subProperty($documentable);
+                        } else {
+                            $values['values'][] = $documentable->$relation->$subProperty ?? '';
+                        }
+                    } else if (method_exists($documentable, $property)) {
+                        $values['values'][] = $documentable->$property($documentable);
                     } else {
-                        $values['values'][$index] = $documentable->$relation->$subProperty ?? '';
+                        $values['values'][] = $documentable->$property ?? '';
                     }
-                } else if (method_exists($documentable, $property)) {
-                    $values['values'][$index] = $documentable->$property($documentable);
                 } else {
-                    $values['values'][$index] = $documentable->$property ?? '';
+                    $values['values'][] = '';
                 }
-            } else {
-                $values['values'][$index] = '';
             }
         }
 
