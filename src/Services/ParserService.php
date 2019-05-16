@@ -83,20 +83,16 @@ class ParserService
 
     /**
      * @param DocumentableInterface $documentable
-     * @param bool $useOriginal
      * @return string
      * @throws MissingRelationException
      */
-    public function render(DocumentableInterface $documentable, $useOriginal = false): string
+    public function render(DocumentableInterface $documentable): string
     {
         if (!isset($documentable->document)) {
             throw new MissingRelationException('Missing document relationship');
         }
 
         $template = $documentable->document->content;
-        if ($documentable->content && !$useOriginal) {
-            $template = $documentable->content;
-        }
 
         $values = $this->getPlaceholderValues($documentable);
 
@@ -135,9 +131,9 @@ class ParserService
     /**
      * @param DocumentableInterface $documentable
      * @param $placeHolder
-     * @return mixed|string
+     * @return string
      */
-    private function getPlaceholderValue(DocumentableInterface $documentable, $placeHolder)
+    private function getPlaceholderValue(DocumentableInterface $documentable, $placeHolder): string
     {
         $customPlaceHolders = config('laradium-documents.custom_placeholders');
 
@@ -152,7 +148,7 @@ class ParserService
         }
 
         if (isset($customPlaceHolders[$placeHolder])) {
-            $customPlaceholder = $customPlaceHolders[$placeHolder];
+            $customPlaceholder = (string)$customPlaceHolders[$placeHolder];
 
             return is_callable($customPlaceholder) ? $customPlaceholder($documentable) : $customPlaceholder;
         }
@@ -226,9 +222,13 @@ class ParserService
      */
     private function replacePlaceholders($template, $values): string
     {
-        return str_replace(array_map(static function ($placeHolder) {
+        $placeHolders = array_map(static function ($placeHolder) {
             return '{' . $placeHolder . '}';
-        }, array_keys($values)), array_values($values), $template);
+        }, array_keys($values));
+
+        $values = array_values($values);
+
+        return str_replace($placeHolders, $values, $template);
     }
 
     /**
