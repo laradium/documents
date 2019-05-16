@@ -10,6 +10,7 @@ class Document extends Select
 {
     /**
      * Document constructor.
+     *
      * @param $parameters
      * @param Model $model
      */

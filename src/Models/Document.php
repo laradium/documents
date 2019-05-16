@@ -56,9 +56,9 @@ class Document extends Model
     /** Helpers */
 
     /**
-     * @return mixed
+     * @return Builder
      */
-    public function revisions()
+    public function revisions(): Builder
     {
         return self::where('key', $this->key)->revision();
     }

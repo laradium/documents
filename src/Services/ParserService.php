@@ -68,7 +68,13 @@ class ParserService
             }
         }
 
-        foreach (config('laradium-documents.custom_placeholders') as $placeholder => $value) {
+        $customPlaceHolders = config('laradium-documents.custom_placeholders');
+
+        if (!is_array($customPlaceHolders) && is_callable($customPlaceHolders)) {
+            $customPlaceHolders = $customPlaceHolders();
+        }
+
+        foreach ($customPlaceHolders as $placeholder => $value) {
             $placeholders['custom'][] = $placeholder;
         }
 
@@ -77,20 +83,28 @@ class ParserService
 
     /**
      * @param DocumentableInterface $documentable
+     * @param bool $useOriginal
      * @return string
      * @throws MissingRelationException
      */
-    public function render(DocumentableInterface $documentable): string
+    public function render(DocumentableInterface $documentable, $useOriginal = false): string
     {
         if (!isset($documentable->document)) {
             throw new MissingRelationException('Missing document relationship');
         }
 
         $template = $documentable->document->content;
+        if ($documentable->content && !$useOriginal) {
+            $template = $documentable->content;
+        }
 
-        $replace = $this->buildPlaceholderValues($documentable);
+        $values = $this->getPlaceholderValues($documentable);
 
-        $content = str_replace($replace['placeholders'], $replace['values'], $template);
+        $content = $this->replacePlaceholders($template, $values);
+
+        $content = $this->parseMathOperations($content, $values);
+
+        $content = $this->parseDefaultValues($content, $values);
 
         $documentable->update([
             'content' => $content
@@ -104,49 +118,74 @@ class ParserService
     /**
      * @param DocumentableInterface $documentable
      * @return array
-     *
-     * @TODO Refactor this, in something more readable
      */
-    private function buildPlaceholderValues(DocumentableInterface $documentable): array
+    private function getPlaceholderValues(DocumentableInterface $documentable): array
     {
-        $values = [
-            'placeholders' => [],
-            'values'       => []
-        ];
+        $values = [];
 
         foreach ($this->getPlaceholders() as $nameSpace => $placeHolders) {
             foreach ($placeHolders as $placeHolder) {
-                $values['placeholders'][] = '{' . $placeHolder . '}';
-
-                [$nameSpace, $property] = explode('.', $placeHolder, 2);
-
-                if ($nameSpace === 'function') {
-                    $values['values'][] = $this->runFunction($property);
-                } elseif (isset(config('laradium-documents.custom_placeholders')[$placeHolder])) {
-                    $customPlaceholder = config('laradium-documents.custom_placeholders')[$placeHolder];
-
-                    $values['values'][] = is_callable($customPlaceholder) ? $customPlaceholder($documentable) : $customPlaceholder;
-                } elseif ($nameSpace === strtolower(class_basename($documentable))) {
-                    if (str_contains($property, '.')) {
-                        [$relation, $subProperty] = explode('.', $property);
-
-                        if (method_exists($documentable->$relation, $subProperty)) {
-                            $values['values'][] = $documentable->$relation->$subProperty($documentable);
-                        } else {
-                            $values['values'][] = $documentable->$relation->$subProperty ?? '';
-                        }
-                    } else if (method_exists($documentable, $property)) {
-                        $values['values'][] = $documentable->$property($documentable);
-                    } else {
-                        $values['values'][] = $documentable->$property ?? '';
-                    }
-                } else {
-                    $values['values'][] = '';
-                }
+                $values[$placeHolder] = $this->getPlaceholderValue($documentable, $placeHolder);
             }
         }
 
         return $values;
+    }
+
+    /**
+     * @param DocumentableInterface $documentable
+     * @param $placeHolder
+     * @return mixed|string
+     */
+    private function getPlaceholderValue(DocumentableInterface $documentable, $placeHolder)
+    {
+        $customPlaceHolders = config('laradium-documents.custom_placeholders');
+
+        if (!is_array($customPlaceHolders) && is_callable($customPlaceHolders)) {
+            $customPlaceHolders = $customPlaceHolders();
+        }
+
+        [$nameSpace, $property] = explode('.', $placeHolder, 2);
+
+        if ($nameSpace === 'function') {
+            return $this->runFunction($property);
+        }
+
+        if (isset($customPlaceHolders[$placeHolder])) {
+            $customPlaceholder = $customPlaceHolders[$placeHolder];
+
+            return is_callable($customPlaceholder) ? $customPlaceholder($documentable) : $customPlaceholder;
+        }
+
+        if ($nameSpace === strtolower(class_basename($documentable))) {
+            return $this->getDocumentableValue($documentable, $property);
+        }
+
+        return '';
+    }
+
+    /**
+     * @param DocumentableInterface $documentable
+     * @param $property
+     * @return string
+     */
+    private function getDocumentableValue(DocumentableInterface $documentable, $property): string
+    {
+        if (str_contains($property, '.')) {
+            [$relation, $subProperty] = explode('.', $property);
+
+            if (method_exists($documentable->$relation, $subProperty)) {
+                return $documentable->$relation->$subProperty($documentable);
+            }
+
+            return $documentable->$relation->$subProperty ?? '';
+        }
+
+        if (method_exists($documentable, $property)) {
+            return $documentable->$property($documentable);
+        }
+
+        return $documentable->$property ?? '';
     }
 
     /**
@@ -178,5 +217,65 @@ class ParserService
         }
 
         return '';
+    }
+
+    /**
+     * @param $template
+     * @param $values
+     * @return string
+     */
+    private function replacePlaceholders($template, $values): string
+    {
+        return str_replace(array_map(static function ($placeHolder) {
+            return '{' . $placeHolder . '}';
+        }, array_keys($values)), array_values($values), $template);
+    }
+
+    /**
+     * @param $template
+     * @param $values
+     * @return string
+     *
+     * @TODO Modify this so the method could handle more complex mathematical operations
+     */
+    private function parseMathOperations($template, $values): string
+    {
+        return preg_replace_callback('/\\{(\S+)\s?(\+|\-|\\|\*)\s?(\S+)\}/', static function ($matches) use ($values) {
+            $firstValue = $values[$matches[1]] ?? $matches[1];
+            $operator = $matches[2];
+            $secondValue = $values[$matches[3]] ?? $matches[3];
+
+            if (is_numeric($firstValue) && is_numeric($secondValue)) {
+                if ($operator === '+') {
+                    return $firstValue + $secondValue;
+                }
+
+                if ($operator === '-') {
+                    return $firstValue - $secondValue;
+                }
+
+                if ($operator === '*') {
+                    return $firstValue * $secondValue;
+                }
+
+                if ($operator === '/') {
+                    return $firstValue / $secondValue;
+                }
+            }
+
+            return $firstValue . $secondValue;
+        }, $template);
+    }
+
+    /**
+     * @param $template
+     * @param $values
+     * @return string
+     */
+    private function parseDefaultValues($template, $values): string
+    {
+        return preg_replace_callback('/\{(\S+)\s?\|\s?\"(.+)\"\}/', static function ($matches) use ($values) {
+            return isset($values[$matches[1]]) && $matches[1] ? $values[$matches[1]] : $matches[2];
+        }, $template);
     }
 }

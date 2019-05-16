@@ -14,6 +14,11 @@ class DocumentGenerated
      */
     public $document;
 
+    /**
+     * DocumentGenerated constructor.
+     *
+     * @param DocumentableInterface $document
+     */
     public function __construct(DocumentableInterface $document)
     {
         $this->document = $document;

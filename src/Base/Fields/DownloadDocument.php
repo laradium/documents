@@ -9,6 +9,7 @@ class DownloadDocument extends Link
 {
     /**
      * DownloadDocument constructor.
+     *
      * @param $parameters
      * @param Model $model
      */
@@ -25,7 +26,11 @@ class DownloadDocument extends Link
         ]);
     }
 
-    public function build($attributes = [])
+    /**
+     * @param array $attributes
+     * @return Link
+     */
+    public function build($attributes = []): Link
     {
         $url = '#';
 

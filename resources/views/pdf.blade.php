@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <style>
         body {
-            font-family: DejaVu Sans;
+            font-family: {{ config('laradium-documents.font_family', 'DejaVu Sans, serif') }};
         }
     </style>
 </head>

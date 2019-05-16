@@ -7,6 +7,9 @@ return [
     //View which will be used for PDF generation
     'pdf_view'            => 'laradium-documents::pdf',
 
+    //The font family, which should be used in PDF generation
+    'font_family'         => 'DejaVu Sans, serif',
+
     //The path that will be checked for documentable models
     'model_path'          => base_path('app/Models'),
 

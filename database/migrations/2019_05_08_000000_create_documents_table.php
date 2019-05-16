@@ -15,8 +15,8 @@ class CreateDocumentsTable extends Migration
             $table->string('title');
             $table->longText('content');
             $table->string('type');
-            $table->integer('revision')->default('1');
-            $table->string('key')->nullable();
+            $table->integer('revision')->default(1);
+            $table->string('key')->nullable()->index();
             $table->timestamps();
         });
     }

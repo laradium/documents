@@ -62,10 +62,10 @@ class DocumentResource extends AbstractResource
                     'type' => $this->getModel()::TYPE_REVISION
                 ]);
 
-                event(new DocumentUpdated($model));
-            } else {
-                event(new DocumentCreated($model));
+                return event(new DocumentUpdated($model));
             }
+
+            return event(new DocumentCreated($model));
         });
 
         return (new Resource)->make(function (FieldSet $set) {
@@ -83,29 +83,15 @@ class DocumentResource extends AbstractResource
                 if (config('laradium-documents.revisions', true)) {
                     $document = $this->getModel()->find(request()->route()->document ?? 0);
 
-                    if ($document) {
-                        $revisions = $document->revisions()->get();
+                    $revisions = $document ? $document->revisions()->get() : [];
 
-                        $options = [
-                            0 => 'Please select...'
-                        ];
+                    $set->select('revert_to')->options($this->getRevisionOptions($revisions))->attr([
+                        'id' => $document ? 'revert-to' : ''
+                    ]);
 
-                        foreach ($revisions as $revision) {
-                            $options[$revision->id] = $revision->title . ' - ' . $revision->created_at;
-                        }
-
-                        $set->select('revert_to')->options($options)->attr([
-                            'id' => 'revert-to'
-                        ]);
-
-                        $set->hidden('revision_json')->modifyValue(function () use ($revisions) {
-                            return json_encode($revisions);
-                        });
-                    } else {
-                        $set->select('revert_to')->options([
-                            0 => 'No history available'
-                        ]);
-                    }
+                    $set->hidden('revision_json')->modifyValue(function () use ($revisions) {
+                        return json_encode($revisions);
+                    });
                 }
 
                 $set->customContent(function () {
@@ -203,5 +189,28 @@ class DocumentResource extends AbstractResource
         }
 
         return null;
+    }
+
+    /**
+     * @param $revisions
+     * @return array
+     */
+    private function getRevisionOptions($revisions): array
+    {
+        if (!$revisions) {
+            return [
+                0 => 'No history available'
+            ];
+        }
+
+        $options = [
+            0 => 'Please select...'
+        ];
+
+        foreach ($revisions as $revision) {
+            $options[$revision->id] = $revision->title . ' - ' . $revision->created_at;
+        }
+
+        return $options;
     }
 }

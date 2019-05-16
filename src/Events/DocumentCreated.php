@@ -14,6 +14,11 @@ class DocumentCreated
      */
     public $document;
 
+    /**
+     * DocumentCreated constructor.
+     *
+     * @param Document $document
+     */
     public function __construct(Document $document)
     {
         $this->document = $document;

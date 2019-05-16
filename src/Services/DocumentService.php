@@ -3,6 +3,7 @@
 namespace Laradium\Laradium\Documents\Services;
 
 use Illuminate\Database\Schema\Blueprint;
+use Laradium\Laradium\Documents\Exceptions\MissingRelationException;
 use Laradium\Laradium\Documents\Interfaces\DocumentableInterface;
 use Throwable;
 
@@ -32,6 +33,7 @@ class DocumentService
     /**
      * @param DocumentableInterface $documentable
      * @return string
+     * @throws MissingRelationException
      */
     public function render(DocumentableInterface $documentable): string
     {
@@ -65,6 +67,7 @@ class DocumentService
     /**
      * @param Blueprint $blueprint
      * @param bool $withForeign
+     * @return void
      */
     public static function columns(Blueprint $blueprint, $withForeign = false): void
     {

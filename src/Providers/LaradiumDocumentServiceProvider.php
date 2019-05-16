@@ -32,6 +32,9 @@ class LaradiumDocumentServiceProvider extends ServiceProvider
         $this->registerFields();
     }
 
+    /**
+     * @return void
+     */
     private function publishConfig(): void
     {
         $configPath = __DIR__ . '/../../config/laradium-documents.php';
@@ -42,6 +45,9 @@ class LaradiumDocumentServiceProvider extends ServiceProvider
         ], 'laradium-documents');
     }
 
+    /**
+     * @return void
+     */
     private function publishAssets(): void
     {
         $assetPath = __DIR__ . '/../../public/laradium/assets/js/documents.js';
@@ -57,16 +63,25 @@ class LaradiumDocumentServiceProvider extends ServiceProvider
         }
     }
 
+    /**
+     * @return void
+     */
     private function loadViews(): void
     {
         $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'laradium-documents');
     }
 
+    /**
+     * @return void
+     */
     private function loadMigrations(): void
     {
         $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
     }
 
+    /**
+     * @return void
+     */
     private function registerFields(): void
     {
         $fieldRegistry = app(FieldRegistry::class);
