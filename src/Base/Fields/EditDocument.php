@@ -19,18 +19,26 @@ class EditDocument extends Field
      *
      * @param $parameters
      * @param Model $model
-     * @throws NotDocumentableException
      */
     public function __construct($parameters, Model $model)
     {
-        if (!in_array(DocumentableInterface::class, class_implements($model), true)) {
-            throw new NotDocumentableException('The model isn\'t documentable');
-        }
-
         parent::__construct($parameters, $model);
 
         $this->fieldName($model->getContentKey());
         $this->value($model->getContent() ?? '');
+    }
+
+    /**
+     * @return array
+     * @throws NotDocumentableException
+     */
+    public function formattedResponse(): array
+    {
+        if (!in_array(DocumentableInterface::class, class_implements($this->getModel()), true)) {
+            throw new NotDocumentableException('The model isn\'t documentable');
+        }
+
+        return parent::formattedResponse();
     }
 
     /**

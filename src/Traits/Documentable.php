@@ -39,7 +39,7 @@ trait Documentable
      */
     public function getContent(): string
     {
-        return $this->{$this->getContentKey()};
+        return $this->{$this->getContentKey()} ?? '';
     }
 
     /** Relationships */
