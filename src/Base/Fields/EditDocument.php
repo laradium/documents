@@ -2,7 +2,6 @@
 
 namespace Laradium\Laradium\Documents\Base\Fields;
 
-use Illuminate\Database\Eloquent\Model;
 use Laradium\Laradium\Base\Field;
 use Laradium\Laradium\Documents\Exceptions\NotDocumentableException;
 use Laradium\Laradium\Documents\Interfaces\DocumentableInterface;
@@ -15,6 +14,18 @@ class EditDocument extends Field
     protected $label;
 
     /**
+     * @param $attributes
+     * @return Field
+     */
+    public function build($attributes = []): Field
+    {
+        $this->fieldName($this->getModel()->getContentKey());
+        $this->value($this->getModel()->getContent() ?? '');
+
+        return parent::build($attributes);
+    }
+
+    /**
      * @return array
      * @throws NotDocumentableException
      */
@@ -23,9 +34,6 @@ class EditDocument extends Field
         if (!in_array(DocumentableInterface::class, class_implements($this->getModel()), true)) {
             throw new NotDocumentableException('The model isn\'t documentable');
         }
-
-        $this->fieldName($this->getModel()->getContentKey());
-        $this->value($this->getModel()->getContent() ?? '');
 
         $response = parent::formattedResponse();
 
