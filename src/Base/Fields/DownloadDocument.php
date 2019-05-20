@@ -45,7 +45,7 @@ class DownloadDocument extends Field
 
         $response['edit_field'] = null;
         if ($this->withEdit) {
-            $response['edit_field'] = (new EditDocument([], $this->getModel()))->build()->formattedResponse();
+            $response['edit_field'] = (new EditDocument([], $this->getModel()))->build($this->getAttributes())->formattedResponse();
         }
 
         return $response;

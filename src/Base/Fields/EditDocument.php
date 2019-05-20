@@ -15,20 +15,6 @@ class EditDocument extends Field
     protected $label;
 
     /**
-     * EditDocument constructor.
-     *
-     * @param $parameters
-     * @param Model $model
-     */
-    public function __construct($parameters, Model $model)
-    {
-        parent::__construct($parameters, $model);
-
-        $this->fieldName($model->getContentKey());
-        $this->value($model->getContent() ?? '');
-    }
-
-    /**
      * @return array
      * @throws NotDocumentableException
      */
@@ -37,6 +23,9 @@ class EditDocument extends Field
         if (!in_array(DocumentableInterface::class, class_implements($this->getModel()), true)) {
             throw new NotDocumentableException('The model isn\'t documentable');
         }
+
+        $this->fieldName($this->getModel()->getContentKey());
+        $this->value($this->getModel()->getContent() ?? '');
 
         $response = parent::formattedResponse();
 
