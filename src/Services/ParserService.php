@@ -92,7 +92,10 @@ class ParserService
             throw new MissingRelationException('Missing document relationship');
         }
 
-        $template = $documentable->document->content;
+        $template = $documentable->getContent();
+        if (!$template) {
+            $template = $documentable->document->content;
+        }
 
         $values = $this->getPlaceholderValues($documentable);
 
@@ -102,9 +105,11 @@ class ParserService
 
         $content = $this->parseDefaultValues($content, $values);
 
-        $documentable->update([
-            'content' => $content
-        ]);
+        if ($content !== $documentable->getContent()) {
+            $documentable->update([
+                $documentable->getContentKey() => $content
+            ]);
+        }
 
         event(new DocumentGenerated($documentable));
 

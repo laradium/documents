@@ -103,7 +103,7 @@ class DocumentResource extends AbstractResource
                 $set->saveButtons()->withoutLanguageSelect();
             });
         })->js([
-            asset('laradium/assets/js/documents.js')
+            asset('laradium/assets/js/documents/documents.js')
         ]);
     }
 
@@ -172,7 +172,7 @@ class DocumentResource extends AbstractResource
 
         abort_unless((bool)$documentable, 404);
 
-        return $this->service->download($documentable);
+        return $this->service->pdf($documentable)->download();
     }
 
     /**

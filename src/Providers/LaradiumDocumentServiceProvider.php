@@ -5,6 +5,7 @@ namespace Laradium\Laradium\Documents\Providers;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
 use Laradium\Laradium\Registries\FieldRegistry;
+use Laradium\Laradium\Services\Asset\AssetManager;
 
 class LaradiumDocumentServiceProvider extends ServiceProvider
 {
@@ -30,6 +31,7 @@ class LaradiumDocumentServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->registerFields();
+        $this->registerAssets();
     }
 
     /**
@@ -50,16 +52,17 @@ class LaradiumDocumentServiceProvider extends ServiceProvider
      */
     private function publishAssets(): void
     {
-        $assetPath = __DIR__ . '/../../public/laradium/assets/js/documents.js';
+        $assets = [
+            __DIR__ . '/../../public/laradium/assets/js/documents.js'  => public_path('laradium/assets/js/documents/documents.js'),
+            __DIR__ . '/../../public/laradium/assets/js/components.js' => public_path('laradium/assets/js/documents/components.js'),
+        ];
 
         $tags = [
             'laradium', 'laradium-assets', 'laradium-documents'
         ];
 
         foreach ($tags as $tag) {
-            $this->publishes([
-                $assetPath => public_path('laradium/assets/js/documents.js')
-            ], $tag);
+            $this->publishes($assets, $tag);
         }
     }
 
@@ -94,5 +97,16 @@ class LaradiumDocumentServiceProvider extends ServiceProvider
 
             $fieldRegistry->register(lcfirst($baseName), $field);
         }
+    }
+
+    /**
+     * @return void
+     */
+    private function registerAssets(): void
+    {
+        $assetManager = app(AssetManager::class);
+        $assetManager->js()->beforeCore([
+            versionedAsset('laradium/assets/js/documents/components.js')
+        ]);
     }
 }

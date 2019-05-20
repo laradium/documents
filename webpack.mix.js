@@ -12,3 +12,4 @@ mix.setPublicPath('public');
  */
 
 mix.js('resources/assets/js/documents.js', 'public/laradium/assets/js');
+mix.js('resources/assets/js/components.js', 'public/laradium/assets/js');

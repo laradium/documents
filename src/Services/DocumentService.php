@@ -2,7 +2,10 @@
 
 namespace Laradium\Laradium\Documents\Services;
 
+use Barryvdh\DomPDF\PDF;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Foundation\Application;
+use Illuminate\Http\Response;
 use Laradium\Laradium\Documents\Exceptions\MissingRelationException;
 use Laradium\Laradium\Documents\Interfaces\DocumentableInterface;
 use Throwable;
@@ -15,11 +18,17 @@ class DocumentService
     private $parser;
 
     /**
+     * @var Application|PDF
+     */
+    private $pdf;
+
+    /**
      * DocumentService constructor.
      */
     public function __construct()
     {
         $this->parser = new ParserService();
+        $this->pdf = app('dompdf.wrapper');
     }
 
     /**
@@ -50,18 +59,50 @@ class DocumentService
 
     /**
      * @param DocumentableInterface $documentable
+     * @return DocumentService
+     * @throws MissingRelationException
+     * @throws Throwable
+     */
+    public function pdf(DocumentableInterface $documentable): self
+    {
+        $this->pdf = $this->pdf->loadHTML(view(config('laradium-documents.pdf_view'), [
+            'document' => $documentable,
+            'content'  => $documentable->getContent() ?: $this->render($documentable)
+        ])->render());
+
+        return $this;
+    }
+
+    /**
      * @return mixed
      * @throws Throwable
      */
-    public function download(DocumentableInterface $documentable)
+    public function stream()
     {
-        $pdf = app('dompdf.wrapper');
+        return $this->pdf->stream();
+    }
 
-        $pdf->loadHTML(view(config('laradium-documents.pdf_view'), [
-            'content' => $documentable->content ?: $this->render($documentable)
-        ])->render());
+    /**
+     * @return Response
+     */
+    public function download(): Response
+    {
+        return $this->pdf->download(time() . '.pdf');
+    }
 
-        return $pdf->stream();
+    /**
+     * @param null $path
+     * @return $this
+     */
+    public function save($path = null): self
+    {
+        if (!$path) {
+            $path = storage_path('laradium/documents/' . time() . '.pdf');
+        }
+
+        $this->pdf->save($path);
+
+        return $this;
     }
 
     /**
