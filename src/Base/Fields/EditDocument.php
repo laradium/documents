@@ -38,7 +38,11 @@ class EditDocument extends Field
             throw new NotDocumentableException('The model isn\'t documentable');
         }
 
-        return parent::formattedResponse();
+        $response = parent::formattedResponse();
+
+        $response['config']['exists'] = $this->getModel()->exists;
+
+        return $response;
     }
 
     /**

@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div v-if="field.config.exists">
         <a :href="field.value" v-bind="fieldAttributes" class="btn btn-primary">
             <template v-if="field.label">
                 {{ field.label }}

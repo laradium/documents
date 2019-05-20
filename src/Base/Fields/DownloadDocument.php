@@ -31,6 +31,7 @@ class DownloadDocument extends Field
 
         $response = parent::formattedResponse();
 
+        $response['config']['exists'] = $this->getModel()->exists;
         $response['config']['with_edit'] = $this->withEdit;
 
         $response['value'] = '#';

@@ -1,8 +1,8 @@
 <template>
-    <div :class="{'d-inline-block': this.inline}">
+    <div v-if="field.config.exists" :class="{'d-inline-block': this.inline}">
         <input type="hidden" :value="field.value" :name="field.name">
 
-        <a href="#edit-document" data-toggle="modal" v-bind="fieldAttributes" class="btn btn-primary">
+        <a :href="'#edit-document'+this.id" data-toggle="modal" v-bind="fieldAttributes" class="btn btn-primary">
             <template v-if="field.label">
                 {{ field.label }}
             </template>
@@ -11,7 +11,7 @@
             </template>
         </a>
 
-        <div id="edit-document" class="modal" tabindex="-1" role="dialog">
+        <div :id="'edit-document'+this.id" class="modal" tabindex="-1" role="dialog">
             <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -43,6 +43,7 @@
 
         data() {
             return {
+                id: Math.random().toString(36).substr(2, 9),
                 content: {
                     label: null,
                     name: 'custom-content',
