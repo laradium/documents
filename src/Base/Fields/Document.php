@@ -18,7 +18,7 @@ class Document extends Select
     {
         parent::__construct($parameters, $model);
 
-        $this->label('Document');
+        $this->label($this->getLabel() ?? 'Document');
         $this->options(DocumentModel::current()->pluck('title', 'id')->toArray());
 
         $this->rules('required|exists:documents,id');

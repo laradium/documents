@@ -2,7 +2,6 @@
 
 namespace Laradium\Laradium\Documents\Base\Fields;
 
-use Illuminate\Database\Eloquent\Model;
 use Laradium\Laradium\Base\Field;
 use Laradium\Laradium\Documents\Exceptions\NotDocumentableException;
 use Laradium\Laradium\Documents\Interfaces\DocumentableInterface;
@@ -29,11 +28,10 @@ class DownloadDocument extends Field
             throw new NotDocumentableException('The model isn\'t documentable');
         }
 
+        $attributes = $this->getAttributes();
         $response = parent::formattedResponse();
-
         $response['config']['exists'] = $this->getModel()->exists;
         $response['config']['with_edit'] = $this->withEdit;
-
         $response['value'] = '#';
 
         if ($this->getModel()->exists) {
@@ -45,7 +43,7 @@ class DownloadDocument extends Field
 
         $response['edit_field'] = null;
         if ($this->withEdit) {
-            $response['edit_field'] = (new EditDocument([], $this->getModel()))->build($this->getAttributes())->formattedResponse();
+            $response['edit_field'] = (new EditDocument([], $this->getModel()))->build($attributes[0] ? $attributes : [])->formattedResponse();
         }
 
         return $response;
