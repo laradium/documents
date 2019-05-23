@@ -9,11 +9,20 @@ use Laradium\Laradium\Documents\Services\DocumentService;
 trait Documentable
 {
     /**
+     * @var bool
+     */
+    public $autoRender = true;
+
+    /**
      * Register the observers
      */
     public static function bootDocumentable(): void
     {
-        static::saved(function ($model) {
+        static::saved(static function (self $model) {
+            if ($model->autoRender()) {
+                return false;
+            }
+
             (new DocumentService())->render($model);
         });
     }
@@ -40,6 +49,16 @@ trait Documentable
     public function getContent(): string
     {
         return $this->{$this->getContentKey()} ?? '';
+    }
+
+    /**
+     * @return bool
+     */
+    public function autoRender(): bool
+    {
+        $globalAutoRender = config('laradium-documents.auto_render', true);
+
+        return $globalAutoRender && $this->autoRender;
     }
 
     /** Relationships */

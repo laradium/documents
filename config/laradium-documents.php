@@ -19,6 +19,9 @@ return [
     //Models that are not in the path, but still are documentable
     'models'              => [],
 
+    //Determines, if documents should automatically render when model is created
+    'auto_render' => true,
+
     //Custom placeholders which will be able to all documentable models
     'custom_placeholders' => [
         'app.name' => config('app.name')
