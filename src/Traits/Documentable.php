@@ -9,11 +9,6 @@ use Laradium\Laradium\Documents\Services\DocumentService;
 trait Documentable
 {
     /**
-     * @var bool
-     */
-    public $autoRender = true;
-
-    /**
      * Register the observers
      */
     public static function bootDocumentable(): void
@@ -57,6 +52,10 @@ trait Documentable
     public function autoRender(): bool
     {
         $globalAutoRender = config('laradium-documents.auto_render', true);
+
+        if (!property_exists($this, 'autoRender')) {
+            return $globalAutoRender;
+        }
 
         return $globalAutoRender && $this->autoRender;
     }
