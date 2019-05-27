@@ -14,7 +14,7 @@ trait Documentable
     public static function bootDocumentable(): void
     {
         static::saved(static function (self $model) {
-            if ($model->autoRender()) {
+            if (!$model->autoRender()) {
                 return false;
             }
 
