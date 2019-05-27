@@ -27,7 +27,9 @@ class DocumentService
      */
     public function __construct()
     {
-        $this->parser = new ParserService();
+        $parserService = config('laradium-documents.parser_service', ParserService::class);
+
+        $this->parser = new $parserService();
         $this->pdf = app('dompdf.wrapper');
     }
 

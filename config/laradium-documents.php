@@ -1,5 +1,7 @@
 <?php
 
+use Laradium\Laradium\Documents\Services\ParserService;
+
 return [
     //Toggle document revisions.
     'revisions'           => true,
@@ -16,11 +18,14 @@ return [
     //The namespace that models in the path use
     'model_namespace'     => 'App\\Models',
 
+    //The service, which is responsible for document generation
+    'parser_service'      => ParserService::class,
+
     //Models that are not in the path, but still are documentable
     'models'              => [],
 
     //Determines, if documents should automatically render when model is created
-    'auto_render' => true,
+    'auto_render'         => true,
 
     //Custom placeholders which will be able to all documentable models
     'custom_placeholders' => [
