@@ -85,11 +85,16 @@ class DocumentService
     }
 
     /**
+     * @param null $name
      * @return Response
      */
-    public function download(): Response
+    public function download($name = null): Response
     {
-        return $this->pdf->download(time() . '.pdf');
+        if (!$name) {
+            $name = time();
+        }
+
+        return $this->pdf->download($name . '.pdf');
     }
 
     /**

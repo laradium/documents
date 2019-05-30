@@ -30,8 +30,10 @@ class ParserService
         $modelNamespace = config('laradium-documents.model_namespace');
         $classes = config('laradium-documents.models');
 
-        foreach (File::files($modelPath) as $file) {
-            $classes[] = $modelNamespace . '\\' . basename($file, '.php');
+        if (is_dir($modelPath)) {
+            foreach (File::files($modelPath) as $file) {
+                $classes[] = $modelNamespace . '\\' . basename($file, '.php');
+            }
         }
 
         foreach ($classes as $class) {
@@ -225,12 +227,6 @@ class ParserService
 
         if ($name === 'time') {
             return now()->toTimeString();
-        }
-
-        if (strpos($name, 'date_format') !== 'false') {
-            [, $format] = explode('=', $name);
-
-            return now()->format($format);
         }
 
         return '';
