@@ -74,7 +74,7 @@ class DocumentResource extends AbstractResource
                     'id' => 'title'
                 ]);
 
-                $set->wysiwyg('content')->rules('required|min:3')->attr([
+                $set->documentEditor('content')->rules('required|min:3')->attr([
                     'id' => 'content',
                 ]);
             });

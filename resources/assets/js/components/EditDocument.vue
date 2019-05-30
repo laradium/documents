@@ -21,7 +21,7 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <wysiwyg-field :field="content"></wysiwyg-field>
+                        <documenteditor-field :field="content" />
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" @click="saveContent" data-dismiss="modal">
@@ -38,7 +38,9 @@
 </template>
 
 <script>
+    import DocumentEditor from "./DocumentEditor";
     export default {
+        components: {DocumentEditor},
         props: ['field', 'inline'],
 
         data() {
@@ -49,6 +51,7 @@
                     name: 'custom-content',
                     config: {
                         is_translatable: false,
+                        placeholders: this.field.config.placeholders,
                     },
                     value: this.field.value
                 }

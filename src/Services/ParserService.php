@@ -82,6 +82,22 @@ class ParserService
     }
 
     /**
+     * @return array
+     */
+    public function getFlatPlaceholders(): array
+    {
+        $flatPlaceholders = [];
+
+        foreach ($this->getPlaceholders() as $nameSpace => $placeholders) {
+            foreach ($placeholders as $placeholder) {
+                $flatPlaceholders[] = $placeholder;
+            }
+        }
+
+        return $flatPlaceholders;
+    }
+
+    /**
      * @param DocumentableInterface $documentable
      * @return string
      * @throws MissingRelationException
@@ -172,7 +188,7 @@ class ParserService
      */
     private function getDocumentableValue(DocumentableInterface $documentable, $property): string
     {
-        if (str_contains($property, '.')) {
+        if (strpos($property, '.') !== false) {
             [$relation, $subProperty] = explode('.', $property);
 
             if (method_exists($documentable->$relation, $subProperty)) {
@@ -211,7 +227,7 @@ class ParserService
             return now()->toTimeString();
         }
 
-        if (str_contains($name, 'date_format')) {
+        if (strpos($name, 'date_format') !== 'false') {
             [, $format] = explode('=', $name);
 
             return now()->format($format);

@@ -5,6 +5,7 @@ namespace Laradium\Laradium\Documents\Base\Fields;
 use Laradium\Laradium\Base\Field;
 use Laradium\Laradium\Documents\Exceptions\NotDocumentableException;
 use Laradium\Laradium\Documents\Interfaces\DocumentableInterface;
+use Laradium\Laradium\Documents\Services\DocumentService;
 
 class EditDocument extends Field
 {
@@ -38,6 +39,7 @@ class EditDocument extends Field
         $response = parent::formattedResponse();
 
         $response['config']['exists'] = $this->getModel()->exists;
+        $response['config']['placeholders'] = (new DocumentService())->getParser()->getFlatPlaceholders();
 
         return $response;
     }
