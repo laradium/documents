@@ -17,6 +17,7 @@
     "minimum-stability": "dev",
     "require": {
         "php": "^7.2",
+        "laradium/laradium": "dev-master",
         "barryvdh/laravel-dompdf": "^0.8.4"
     },
     "require-dev": {

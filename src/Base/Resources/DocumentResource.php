@@ -3,6 +3,7 @@
 namespace Laradium\Laradium\Documents\Base\Resources;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Laradium\Laradium\Base\AbstractResource;
 use Laradium\Laradium\Base\ColumnSet;
@@ -124,21 +125,46 @@ class DocumentResource extends AbstractResource
     /**
      * @param Request $request
      * @param $id
-     * @return mixed
+     * @return JsonResponse
      * @throws ReflectionException
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id): JsonResponse
     {
-        return $this->store($request, $id);
+        return $this->save($request, $id);
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     * @throws ReflectionException
+     */
+    public function store(Request $request): JsonResponse
+    {
+        return $this->save($request);
+    }
+
+    /**
+     * @param $type
+     * @param $id
+     * @return mixed
+     * @throws Throwable
+     */
+    public function download($type, $id)
+    {
+        $documentable = $this->findDocumentableByType($type, $id);
+
+        abort_unless((bool)$documentable, 404);
+
+        return $this->service->pdf($documentable)->download();
     }
 
     /**
      * @param Request $request
      * @param int $id
-     * @return mixed
+     * @return JsonResponse
      * @throws ReflectionException
      */
-    public function store(Request $request, $id = 0)
+    private function save(Request $request, $id = 0): JsonResponse
     {
         $additionalData = [
             'user_id'  => auth()->id(),
@@ -158,21 +184,6 @@ class DocumentResource extends AbstractResource
         $request->merge($additionalData);
 
         return parent::store($request);
-    }
-
-    /**
-     * @param $type
-     * @param $id
-     * @return mixed
-     * @throws Throwable
-     */
-    public function download($type, $id)
-    {
-        $documentable = $this->findDocumentableByType($type, $id);
-
-        abort_unless((bool)$documentable, 404);
-
-        return $this->service->pdf($documentable)->download();
     }
 
     /**
