@@ -26,16 +26,6 @@ class DocumentResource extends AbstractResource
     protected $resource = Document::class;
 
     /**
-     * @var array
-     */
-    protected $customRoutes = [
-        'download' => [
-            'method' => 'GET',
-            'params' => '{type}/{id}'
-        ]
-    ];
-
-    /**
      * @var DocumentService
      */
     protected $service;

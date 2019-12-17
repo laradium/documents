@@ -18,6 +18,7 @@ class LaradiumDocumentServiceProvider extends ServiceProvider
         $this->publishAssets();
         $this->loadViews();
         $this->loadMigrations();
+        $this->loadRoutes();
 
         // Global helpers
         require_once __DIR__ . '/../Helpers/Global.php';
@@ -80,6 +81,14 @@ class LaradiumDocumentServiceProvider extends ServiceProvider
     private function loadMigrations(): void
     {
         $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
+    }
+
+    /**
+     * @return void
+     */
+    private function loadRoutes(): void
+    {
+        $this->loadRoutesFrom(__DIR__ . '/../../routes/admin.php');
     }
 
     /**
